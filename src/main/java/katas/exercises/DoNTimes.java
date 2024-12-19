@@ -9,7 +9,13 @@ public class DoNTimes {
      * @param n    the number of times to execute the function
      */
     public static void doNTimes(Runnable func, int n) {
+        if (func == null || n <= 0) {
+            return; // Do nothing if the function is null or n is not positive
+        }
 
+        for (int i = 0; i < n; i++) {
+            func.run();
+        }
     }
 
     public static void main(String[] args) {
