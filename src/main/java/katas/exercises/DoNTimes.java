@@ -15,7 +15,7 @@ public class DoNTimes {
 
         for (int i = 0; i < n; i++) {
             func.run();
-        }
+        }//h
     }
 
     public static void main(String[] args) {
