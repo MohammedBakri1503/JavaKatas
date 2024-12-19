@@ -9,8 +9,11 @@ public class TimeMe {
      * @return the execution time in milliseconds
      */
     public static long measureExecutionTime(Runnable func) {
-        //hint:  System.currentTimeMillis();
-        return 0;
+        long startTime = System.currentTimeMillis(); // Capture the start time
+        func.run(); // Execute the given function
+        long endTime = System.currentTimeMillis(); // Capture the end time
+
+        return endTime - startTime; // Calculate the time difference
     }
 
     public static void main(String[] args) {

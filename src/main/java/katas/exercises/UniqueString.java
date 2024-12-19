@@ -11,7 +11,24 @@ public class UniqueString {
      * @return true if all characters are unique, false otherwise
      */
     public static boolean isUnique(String str) {
-        return true;
+        if (str == null || str.isEmpty()) {
+            return true; // Treat empty or null strings as unique
+        }
+
+        HashSet<Character> seen = new HashSet<>();
+
+        // Convert the string to lowercase to make it case-insensitive
+        str = str.toLowerCase();
+
+        for (int i = 0; i < str.length(); i++) {
+            char c = str.charAt(i);
+            if (seen.contains(c)) {
+                return false; // If character is already in the set, it's not unique
+            }
+            seen.add(c); // Add character to the set
+        }
+
+        return true; // All characters are unique
     }
 
     public static void main(String[] args) {
