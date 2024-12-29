@@ -1,7 +1,9 @@
 package katas.exercises;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class TestCaseGrouping {
 
@@ -26,7 +28,21 @@ public class TestCaseGrouping {
      * @return a list of groups, where each group contains the indices of test cases covering the same set of requirements
      */
     public static List<List<Integer>> groupTestCases(List<Integer> testCaseGroupSizes) {
-        return new ArrayList<>();
+        Map<Integer, List<Integer>> tempGroups = new HashMap<>();
+        List<List<Integer>> result = new ArrayList<>();
+
+        for (int i = 0; i < testCaseGroupSizes.size(); i++) {
+            int groupSize = testCaseGroupSizes.get(i);
+            tempGroups.putIfAbsent(groupSize, new ArrayList<>());
+            tempGroups.get(groupSize).add(i);
+
+            if (tempGroups.get(groupSize).size() == groupSize) {
+                result.add(new ArrayList<>(tempGroups.get(groupSize)));
+                tempGroups.get(groupSize).clear(); // Reset the group for future test cases
+            }
+        }
+
+        return result;
     }
 
     public static void main(String[] args) {

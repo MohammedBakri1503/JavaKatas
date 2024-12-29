@@ -1,6 +1,8 @@
 package katas.exercises;
 
-public class ValidParentheses {
+import java.util.Stack;
+
+public class  ValidParentheses {
 
     /**
      * Checks if a given string has valid parentheses (try in O(n)).
@@ -13,8 +15,50 @@ public class ValidParentheses {
      * @return true if the string has valid parentheses, false otherwise
      */
     public static boolean isValidParentheses(String s) {
-        // Hint for efficient implementation: stack
-        return false;
+        Stack<Character> stack = new Stack<>();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '(' || s.charAt(i) == '{' || s.charAt(i) == '[') {
+                stack.push(s.charAt(i));
+            }
+            if (s.charAt(i) == ')') {
+                if (stack.empty()) {
+                    return  false;
+                }
+                if (stack.peek() == '(') {
+                    stack.pop();
+                    continue;
+                }
+                if (stack.peek() == '{' || stack.peek() == '[') {
+                    return  false;
+                }
+            }
+            if (s.charAt(i) == ']') {
+                if (stack.empty()) {
+                    return  false;
+                }
+                if (stack.peek() == '[') {
+                    stack.pop();
+                    continue;
+                }
+                if (stack.peek() == '{' || stack.peek() == '(') {
+                    return  false;
+                }
+            }
+            if (s.charAt(i) == '}') {
+                if (stack.empty()) {
+                    return  false;
+                }
+                if (stack.peek() == '{') {
+                    stack.pop();
+                    continue;
+                }
+                if (stack.peek() == '(' || stack.peek() == '[') {
+                    return  false;
+                }
+            }
+        }
+
+        return stack.empty();
     }
 
     public static void main(String[] args) {

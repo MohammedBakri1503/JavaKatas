@@ -10,7 +10,20 @@ public class SemanticVersionComparator {
      * @return -1 if version1 < version2, 1 if version1 > version2, 0 if they are equal
      */
     public static int compareVersions(String version1, String version2) {
-        return 0;
+        int i = 0;
+        while (i < version1.length() && i < version2.length()) {
+            if (version1.charAt(i) == version2.charAt(i)) {
+                i++;
+                continue;
+            }
+            if (version1.charAt(i) < version2.charAt(i)) {
+                return -1;
+            }
+            if (version1.charAt(i) > version2.charAt(i)) {
+                return  1;
+            }
+        }
+        return  0;
     }
 
     public static void main(String[] args) {
