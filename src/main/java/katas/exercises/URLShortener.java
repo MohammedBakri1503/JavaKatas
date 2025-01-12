@@ -16,13 +16,18 @@ public class URLShortener {
      */
 
     private Map<String, String> urlMap;
+    private Map<String, String> reverseMap;
     private static final String BASE_URL = "http://short.ly/";
+    private static final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    private int counter;
 
     /**
      * Constructor to initialize the URL shortener system.
      */
     public URLShortener() {
         urlMap = new HashMap<>();
+        reverseMap = new HashMap<>();
+        counter = 1;
     }
 
     /**
@@ -32,8 +37,15 @@ public class URLShortener {
      * @return the shortened URL
      */
     public String shorten(String longUrl) {
-        // Implement logic to shorten the URL
-        return null;
+        if (reverseMap.containsKey(longUrl)) {
+            return reverseMap.get(longUrl);
+        }
+
+        String shortUrl = BASE_URL + encode(counter);
+        urlMap.put(shortUrl, longUrl);
+        reverseMap.put(longUrl, shortUrl);
+        counter++;
+        return shortUrl;
     }
 
     /**
@@ -43,7 +55,22 @@ public class URLShortener {
      * @return the original long URL
      */
     public String retrieve(String shortUrl) {
-        return urlMap.get(shortUrl); // Implement logic to retrieve long URL
+        return urlMap.get(shortUrl);
+    }
+
+    /**
+     * Encodes a number into a base62 string.
+     *
+     * @param number the number to encode
+     * @return the base62 encoded string
+     */
+    private String encode(int number) {
+        StringBuilder encoded = new StringBuilder();
+        while (number > 0) {
+            encoded.append(BASE62.charAt(number % 62));
+            number /= 62;
+        }
+        return encoded.reverse().toString();
     }
 
     public static void main(String[] args) {
@@ -56,4 +83,3 @@ public class URLShortener {
         System.out.println("Original URL: " + shortener.retrieve(shortUrl));
     }
 }
-

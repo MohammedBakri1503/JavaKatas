@@ -36,7 +36,7 @@ public class QueueWithFailover {
          *
          * @return boolean: True if the job queue is empty, False otherwise.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return jobs.isEmpty() && hiddenJobs.isEmpty();
     }
 
     public void sendJob(String job) {
@@ -45,7 +45,7 @@ public class QueueWithFailover {
          *
          * @param job The job to be added to the queue.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        jobs.add(job);
     }
 
     public String getJob() throws EmptyQueueException {
@@ -55,7 +55,13 @@ public class QueueWithFailover {
          * @return String: The job at the front of the queue.
          * @throws EmptyQueueException: If the job queue is empty.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (jobs.isEmpty()) {
+            throw new EmptyQueueException("The job queue is empty.");
+        }
+
+        String job = jobs.poll();
+        hiddenJobs.put(job, System.currentTimeMillis());
+        return job;
     }
 
     public void jobDone(String job) {
@@ -66,7 +72,10 @@ public class QueueWithFailover {
          * @param job The job to be deleted permanently from the queue.
          * @throws IllegalArgumentException: If the job is not found in the hidden jobs.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        if (!hiddenJobs.containsKey(job)) {
+            throw new IllegalArgumentException("Job not found in hidden jobs: " + job);
+        }
+        hiddenJobs.remove(job);
     }
 
     public int size() {
@@ -75,7 +84,7 @@ public class QueueWithFailover {
          *
          * @return int: The number of jobs in the queue.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return jobs.size();
     }
 
     public int inFlightSize() {
@@ -84,14 +93,26 @@ public class QueueWithFailover {
          *
          * @return int: The number of hidden jobs in the queue.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        return hiddenJobs.size();
     }
 
     public void returnExpiredJobsToQueue() {
         /**
          * Return hidden jobs that were retrieved more than `jobTimeout` seconds ago back to the job queue.
          */
-        throw new UnsupportedOperationException("Not implemented yet.");
+        long currentTime = System.currentTimeMillis();
+        Iterator<Map.Entry<String, Long>> iterator = hiddenJobs.entrySet().iterator();
+
+        while (iterator.hasNext()) {
+            Map.Entry<String, Long> entry = iterator.next();
+            String job = entry.getKey();
+            long timestamp = entry.getValue();
+
+            if ((currentTime - timestamp) / 1000 >= jobTimeout) {
+                iterator.remove();
+                jobs.add(job);
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -104,9 +125,11 @@ public class QueueWithFailover {
         System.out.println("Job Queue Size: " + jobQueue.size());
 
         String currentJob = jobQueue.getJob();
+        System.out.println("Retrieved: " + currentJob);
         jobQueue.jobDone(currentJob);
 
         currentJob = jobQueue.getJob();
+        System.out.println("Retrieved: " + currentJob);
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
@@ -119,6 +142,9 @@ public class QueueWithFailover {
         } catch (IllegalArgumentException e) {
             System.out.println("Job not found as it was expired and returned to the main queue");
         }
+
+        System.out.println("Job Queue Size: " + jobQueue.size());
+        System.out.println("In-Flight Size: " + jobQueue.inFlightSize());
     }
 
     static class EmptyQueueException extends RuntimeException {
