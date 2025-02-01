@@ -1,5 +1,7 @@
 package katas.exercises;
 
+import java.util.Stack;
+
 /**
  * Kth Smallest Element in a Binary Search Tree
  *
@@ -15,13 +17,29 @@ package katas.exercises;
  *
  * The 3rd smallest element is 4.
  *
- * Expected time complexity is O(n), while n is the tree height.
+ * Expected time complexity is O(n), where n is the number of nodes in the tree.
  * You may assume k is always valid, 1 ≤ k ≤ BST's total elements.
  */
 public class KthSmallestElementInBST {
 
     public static int kthSmallest(TreeNode root, int k) {
-        return -1;
+        Stack<TreeNode> stack = new Stack<>();
+        TreeNode current = root;
+        int count = 0;
+
+        while (current != null || !stack.isEmpty()) {
+            while (current != null) {
+                stack.push(current);
+                current = current.left;
+            }
+            current = stack.pop();
+            count++;
+            if (count == k) {
+                return current.val;
+            }
+            current = current.right;
+        }
+        return -1; // This should never be reached given valid input
     }
 
     public static void main(String[] args) {

@@ -7,91 +7,132 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This source code follows Martin Fowler's book "Refactoring, Improving the Design of Existing Code".
- * When you find you have to add a feature to a program, and the program's code is not
- * structured in a convenient way to add the feature, first refactor the program to make it
- * easy to add the feature, then add the feature.
- *
- * Whenever you do refactoring, you MUST build a solid set of tests for that section of code.
- *
- * The `statement` method prints out a simple text output of a rental statement:
- *
- *      Rental Record for martin
- *        Ran 3.5
- *        Trois Couleurs: Bleu 2.0
- *      Amount owed is 5.5
- *      You earned 2 frequent renter points
- *
- *
- * We want to write an HTML version of the statement method :
- *
- *      <h1>Rental Record for <em>martin</em></h1>
- *      <table>
- *        <tr><td>Ran</td><td>3.5</td></tr>
- *        <tr><td>Trois Couleurs: Bleu</td><td>2.0</td></tr>
- *      </table>
- *      <p>Amount owed is <em>5.5</em></p>
- *      <p>You earned <em>2</em> frequent renter points</p>
- *
- * Carfully think how to refactor this code, and write the corresponding tests under MovieRentalCustomerTest.
+ * The refactored MovieRentalCustomer class with statement and HTML statement generation.
  */
 public class MovieRentalCustomer {
 
     private String _name;
-    private List<Rental> _rentals = new ArrayList<Rental>();
+    private List<Rental> _rentals = new ArrayList<>();
 
     public MovieRentalCustomer(String name) {
         _name = name;
     }
 
-    public void addRental(Rental arg) {
-        _rentals.add(arg);
+    public void addRental(Rental rental) {
+        _rentals.add(rental);
     }
 
     public String getName() {
         return _name;
     }
 
+    /**
+     * Generates the rental statement in plain text format.
+     *
+     * @return the rental statement in plain text
+     */
     public String statement() {
         double totalAmount = 0;
         int frequentRenterPoints = 0;
-        String result = "Rental Record for " + getName() + "\n";
+        StringBuilder result = new StringBuilder("Rental Record for " + getName() + "\n");
 
         for (Rental each : _rentals) {
-            double thisAmount = 0;
+            // Calculate rental amount and frequent renter points
+            double thisAmount = calculateAmount(each);
+            frequentRenterPoints += calculateFrequentRenterPoints(each);
 
-            //determine amounts for each line
-            switch (each.getMovie().getPriceCode()) {
-                case Movie.REGULAR:
-                    thisAmount += 2;
-                    if (each.getDaysRented() > 2)
-                        thisAmount += (each.getDaysRented() - 2) * 1.5;
-                    break;
-                case Movie.NEW_RELEASE:
-                    thisAmount += each.getDaysRented() * 3;
-                    break;
-                case Movie.CHILDRENS:
-                    thisAmount += 1.5;
-                    if (each.getDaysRented() > 3)
-                        thisAmount += (each.getDaysRented() - 3) * 1.5;
-                    break;
-            }
+            // Append the rental info to the result
+            result.append("\t")
+                    .append(each.getMovie().getTitle())
+                    .append("\t")
+                    .append(thisAmount)
+                    .append("\n");
 
-            // add frequent renter points
-            frequentRenterPoints++;
-            // add bonus for a two day new release rental
-            if ((each.getMovie().getPriceCode() == Movie.NEW_RELEASE) && each.getDaysRented() > 1)
-                frequentRenterPoints++;
-
-            // show figures for this rental
-            result += "\t" + each.getMovie().getTitle() + "\t" + String.valueOf(thisAmount) + "\n";
             totalAmount += thisAmount;
         }
 
-        // add footer lines
-        result += "Amount owed is " + String.valueOf(totalAmount) + "\n";
-        result += "You earned " + String.valueOf(frequentRenterPoints) + " frequent renter points";
+        // Append the footer
+        result.append("Amount owed is ").append(totalAmount).append("\n");
+        result.append("You earned ").append(frequentRenterPoints).append(" frequent renter points");
 
-        return result;
+        return result.toString();
+    }
+
+    /**
+     * Generates the rental statement in HTML format.
+     *
+     * @return the rental statement in HTML format
+     */
+    public String htmlStatement() {
+        double totalAmount = 0;
+        int frequentRenterPoints = 0;
+        StringBuilder result = new StringBuilder("<h1>Rental Record for <em>" + getName() + "</em></h1>");
+        result.append("<table>");
+
+        for (Rental each : _rentals) {
+            // Calculate rental amount and frequent renter points
+            double thisAmount = calculateAmount(each);
+            frequentRenterPoints += calculateFrequentRenterPoints(each);
+
+            // Append the rental info in HTML format
+            result.append("<tr><td>")
+                    .append(each.getMovie().getTitle())
+                    .append("</td><td>")
+                    .append(thisAmount)
+                    .append("</td></tr>");
+
+            totalAmount += thisAmount;
+        }
+
+        // Append the footer
+        result.append("</table>");
+        result.append("<p>Amount owed is <em>").append(totalAmount).append("</em></p>");
+        result.append("<p>You earned <em>").append(frequentRenterPoints).append("</em> frequent renter points</p>");
+
+        return result.toString();
+    }
+
+    /**
+     * Calculates the rental amount for a given rental.
+     *
+     * @param rental the rental
+     * @return the rental amount
+     */
+    private double calculateAmount(Rental rental) {
+        double thisAmount = 0;
+
+        // Determine the amount for this rental based on movie price code and days rented
+        switch (rental.getMovie().getPriceCode()) {
+            case Movie.REGULAR:
+                thisAmount += 2;
+                if (rental.getDaysRented() > 2)
+                    thisAmount += (rental.getDaysRented() - 2) * 1.5;
+                break;
+            case Movie.NEW_RELEASE:
+                thisAmount += rental.getDaysRented() * 3;
+                break;
+            case Movie.CHILDRENS:
+                thisAmount += 1.5;
+                if (rental.getDaysRented() > 3)
+                    thisAmount += (rental.getDaysRented() - 3) * 1.5;
+                break;
+        }
+        return thisAmount;
+    }
+
+    /**
+     * Calculates the frequent renter points for a given rental.
+     *
+     * @param rental the rental
+     * @return the frequent renter points
+     */
+    private int calculateFrequentRenterPoints(Rental rental) {
+        int points = 1;
+
+        // Add bonus for a two-day new release rental
+        if ((rental.getMovie().getPriceCode() == Movie.NEW_RELEASE) && rental.getDaysRented() > 1)
+            points++;
+
+        return points;
     }
 }

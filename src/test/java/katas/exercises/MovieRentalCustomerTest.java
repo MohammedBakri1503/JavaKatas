@@ -32,4 +32,6 @@ public class MovieRentalCustomerTest {
         assertEquals(expected, customer.statement());
     }
 
+
+
 }

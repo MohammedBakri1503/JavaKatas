@@ -1,30 +1,12 @@
+
 package katas.exercises;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * DroneFly Inc. operates a fleet of drones for package deliveries. Each drone can carry only one package at a time.
- * Customers send requests with the delivery start time, delivery duration,
- * and the payment they are willing to make for the delivery.
- *
- * Your task is to help DroneFly Inc. maximize its profit by finding the best combination of delivery
- * requests that a single drone can fulfill.
- *
- * Requests are sorted by their start times. Here's a sample input file with 4 delivery requests:
- *
- *  REQ01 0 5 50
- *  REQ02 3 7 80
- *  REQ03 5 9 60
- *  REQ04 6 9 70
- *
- *  The best combination is REQ01 and REQ04, with a total payment of 50+70=120.
- */
 public class Lags {
 
-    /**
-     * Represents a delivery request.
-     */
     static class Request {
         String id;
         int startTime;
@@ -37,6 +19,10 @@ public class Lags {
             this.duration = duration;
             this.payment = payment;
         }
+
+        public int getEndTime() {
+            return startTime + duration;
+        }
     }
 
     /**
@@ -46,7 +32,50 @@ public class Lags {
      * @return the maximum profit
      */
     public static int maximizeProfit(List<Request> requests) {
-        return 0;
+        int n = requests.size();
+        int[] dp = new int[n];
+
+        // Initialize the DP array: base case for the first request
+        dp[0] = requests.get(0).payment;
+
+        // Helper function to find the last non-overlapping request using binary search
+        for (int i = 1; i < n; i++) {
+            // Find the last request that doesn't overlap with the current one
+            int prevIndex = binarySearch(requests, i);
+
+            // Calculate the maximum profit for current request i
+            if (prevIndex != -1) {
+                dp[i] = Math.max(requests.get(i).payment + dp[prevIndex], dp[i - 1]);
+            } else {
+                dp[i] = Math.max(requests.get(i).payment, dp[i - 1]);
+            }
+        }
+
+        // The last value in the DP array will be the answer
+        return dp[n - 1];
+    }
+
+    /**
+     * Binary search for the last non-overlapping request.
+     */
+    private static int binarySearch(List<Request> requests, int index) {
+        int low = 0, high = index - 1;
+        int targetEndTime = requests.get(index).startTime;
+
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            if (requests.get(mid).getEndTime() <= targetEndTime) {
+                if (requests.get(mid + 1).getEndTime() <= targetEndTime) {
+                    low = mid + 1;
+                } else {
+                    return mid;
+                }
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        return -1;
     }
 
     public static void main(String[] args) {
@@ -61,5 +90,4 @@ public class Lags {
         System.out.println("Maximum Profit: " + maxProfit); // Output: 120
     }
 }
-
 
